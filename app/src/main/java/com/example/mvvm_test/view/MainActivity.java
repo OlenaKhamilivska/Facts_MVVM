@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private WebRepo mWebRepo;
     private MainViewModelFactory mFactory;
     private CustomAdapter mAdapter;
+    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,14 +54,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void observable() {
+
         mMyViewModel.getDataFromDB().observe(this, new Observer<List<Numbers>>() {
             @Override
             public void onChanged(List<Numbers> numbers) {
                 mAdapter.submitList(numbers);
+
             }
 
         });
-        Log.d("ssTAG", "observable: ");
         mMyViewModel.getPojoLiveData().observe(this, new Observer<NumbersResponsePojo>() {
 
             @Override
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 mTV_showFact.setText(numbersResponsePojo.getText());
+                mProgressDialog.dismiss();
             }
         });
     }
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             "integer", LENGTH_LONG).show();
                 } else if (number != null && !number.equals("")) {
                     mMyViewModel.getNumbers(number);
+                    setProgressDialog();
                 } else if (number.equals("")) {
                     makeText(MainActivity.this, "Field is empty, enter number, please",
                             LENGTH_LONG).show();
@@ -102,10 +106,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.mBTN_randomNumber:
                 String number1 = mET_enterNumber.getText().toString();
                 mMyViewModel.getRandomNumbers(number1);
+                setProgressDialog();
                 break;
             default:
                 makeText(MainActivity.this, "default ", LENGTH_LONG).show();
         }
+    }
+    private void setProgressDialog () {
+        mProgressDialog = new ProgressDialog(MainActivity.this);
+        mProgressDialog.setMessage("Loading...");
+        mProgressDialog.show();
     }
 
     public void setListeners() {
