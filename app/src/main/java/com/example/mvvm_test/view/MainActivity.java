@@ -3,6 +3,7 @@ package com.example.mvvm_test.view;
 import static android.widget.Toast.LENGTH_LONG;
 import static android.widget.Toast.makeText;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -59,9 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onChanged(List<Numbers> numbers) {
                 mAdapter.submitList(numbers);
-
             }
-
         });
         mMyViewModel.getPojoLiveData().observe(this, new Observer<NumbersResponsePojo>() {
 
@@ -77,6 +77,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mProgressDialog.dismiss();
             }
         });
+//        mMyViewModel.getShowErrorMessageLiveData().observe(new Observer<NumbersResponsePojo>() {
+//            @Override
+//            public void onChanged(NumbersResponsePojo numbersResponsePojo) {
+//                Log.d("bbbTAG", "onChanged: ");
+//            }
+//        });
     }
 
     private void intViewModel() {

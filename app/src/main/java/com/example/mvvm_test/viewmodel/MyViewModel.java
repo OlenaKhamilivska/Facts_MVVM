@@ -11,6 +11,7 @@ import com.example.mvvm_test.db.Numbers;
 import com.example.mvvm_test.model.NumbersResponsePojo;
 import com.example.mvvm_test.model.DataBaseRepo;
 import com.example.mvvm_test.model.WebRepo;
+import com.example.mvvm_test.model.exceptions.NoConnectivityException;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class MyViewModel extends AndroidViewModel {
     private final WebRepo numberRepository;
     private final DataBaseRepo dataBaseRepo;
     private LiveData<List<Numbers>> numbers = new MutableLiveData<>();
+    private final MutableLiveData<NumbersResponsePojo> showErrorMessageLiveData = new MutableLiveData<>();
 
     public LiveData<List<Numbers>> getDataFromDB() {
         return numbers;
@@ -44,7 +46,6 @@ public class MyViewModel extends AndroidViewModel {
 
     public void setPojoLiveData(NumbersResponsePojo pojoLiveData) {
         this.pojoLiveData.setValue(pojoLiveData);
-        ;
     }
 
     public void getNumbers(String num) {
@@ -67,7 +68,9 @@ public class MyViewModel extends AndroidViewModel {
                     @Override
                     public void onError(Throwable e) {
                         Log.d("numTAg", "onError: " + e.getMessage());
-
+                        if (e instanceof NoConnectivityException) {
+                            e.getMessage();
+                        }
                     }
 
                     @Override
@@ -95,11 +98,19 @@ public class MyViewModel extends AndroidViewModel {
 
                     @Override
                     public void onError(Throwable e) {
+                        Log.d("numTAg", "onError: " + e.getMessage());
+                        if (e instanceof NoConnectivityException) {
+                            e.getMessage();
+                        }
                     }
 
                     @Override
                     public void onComplete() {
                     }
                 });
+    }
+
+    public MutableLiveData<NumbersResponsePojo> getShowErrorMessageLiveData() {
+        return showErrorMessageLiveData;
     }
 }
