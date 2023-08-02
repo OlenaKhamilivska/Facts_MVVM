@@ -3,31 +3,30 @@ package com.example.mvvm_test.view;
 import static android.widget.Toast.LENGTH_LONG;
 import static android.widget.Toast.makeText;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mvvm_test.R;
 import com.example.mvvm_test.db.Numbers;
 import com.example.mvvm_test.viewmodel.MainViewModelFactory;
 import com.example.mvvm_test.viewmodel.MyViewModel;
 import com.example.mvvm_test.model.NumbersResponsePojo;
-import com.example.mvvm_test.model.WebRepo;
+import com.example.mvvm_test.model.repositories.WebRepo;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity  implements View.OnClickListener{
     private MyViewModel mMyViewModel;
     private EditText mET_enterNumber;
     private Button mBTN_enteredNumber, mBTN_randomNumber;
@@ -36,10 +35,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private WebRepo mWebRepo;
     private MainViewModelFactory mFactory;
     private CustomAdapter mAdapter;
-    private ProgressDialog mProgressDialog;
+    private ProgressBar progressBar;
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         intViewModel();
@@ -56,15 +56,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void observable() {
-
         mMyViewModel.getDataFromDB().observe(this, new Observer<List<Numbers>>() {
             @Override
             public void onChanged(List<Numbers> numbers) {
                 mAdapter.submitList(numbers);
             }
         });
-        mMyViewModel.getPojoLiveData().observe(this, new Observer<NumbersResponsePojo>() {
 
+        mMyViewModel.getPojoLiveData().observe(this, new Observer<NumbersResponsePojo>() {
             @Override
             public void onChanged(NumbersResponsePojo numbersResponsePojo) {
                 if (numbersResponsePojo == null) {
@@ -74,15 +73,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return;
                 }
                 mTV_showFact.setText(numbersResponsePojo.getText());
-                mProgressDialog.dismiss();
             }
         });
-//        mMyViewModel.getShowErrorMessageLiveData().observe(new Observer<NumbersResponsePojo>() {
-//            @Override
-//            public void onChanged(NumbersResponsePojo numbersResponsePojo) {
-//                Log.d("bbbTAG", "onChanged: ");
-//            }
-//        });
+
+        mMyViewModel.getErrorMessageLiveData().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String message) {
+                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        mMyViewModel.getShowLoadingLiveData().observe(this, new Observer<Void>() {
+            @Override
+            public void onChanged(Void unused) {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        });
+        mMyViewModel.getHideLoadingLiveData().observe(this, new Observer<Void>() {
+            @Override
+            public void onChanged(Void unused) {
+                progressBar.setVisibility(View.GONE);
+            }
+        });
     }
 
     private void intViewModel() {
@@ -101,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             "integer", LENGTH_LONG).show();
                 } else if (number != null && !number.equals("")) {
                     mMyViewModel.getNumbers(number);
-                    setProgressDialog();
                 } else if (number.equals("")) {
                     makeText(MainActivity.this, "Field is empty, enter number, please",
                             LENGTH_LONG).show();
@@ -112,16 +123,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.mBTN_randomNumber:
                 String number1 = mET_enterNumber.getText().toString();
                 mMyViewModel.getRandomNumbers(number1);
-                setProgressDialog();
                 break;
             default:
                 makeText(MainActivity.this, "default ", LENGTH_LONG).show();
         }
-    }
-    private void setProgressDialog () {
-        mProgressDialog = new ProgressDialog(MainActivity.this);
-        mProgressDialog.setMessage("Loading...");
-        mProgressDialog.show();
     }
 
     public void setListeners() {
@@ -135,5 +140,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBTN_randomNumber = findViewById(R.id.mBTN_randomNumber);
         mET_enterNumber = findViewById(R.id.mET_enterNumber);
         mCustomRecyclerView = findViewById(R.id.customRecyclerView);
+        progressBar = findViewById(R.id.progressBar);
     }
 }

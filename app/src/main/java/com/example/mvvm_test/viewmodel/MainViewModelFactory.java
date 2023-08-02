@@ -6,10 +6,9 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.mvvm_test.model.WebRepo;
+import com.example.mvvm_test.model.repositories.WebRepo;
 
 public class MainViewModelFactory implements ViewModelProvider.Factory {
-
     private final WebRepo mNumberRepository;
     private final Application application;
 

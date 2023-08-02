@@ -9,8 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.mvvm_test.db.Numbers;
 import com.example.mvvm_test.model.NumbersResponsePojo;
-import com.example.mvvm_test.model.DataBaseRepo;
-import com.example.mvvm_test.model.WebRepo;
+import com.example.mvvm_test.model.repositories.DataBaseRepo;
+import com.example.mvvm_test.model.repositories.WebRepo;
 import com.example.mvvm_test.model.exceptions.NoConnectivityException;
 
 import java.util.List;
@@ -19,15 +19,13 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
 public class MyViewModel extends AndroidViewModel {
+    private LiveData<List<Numbers>> numbers = new MutableLiveData<>();
     private final MutableLiveData<NumbersResponsePojo> pojoLiveData = new MutableLiveData<>();
+    private MutableLiveData <String> errorMessageLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Void> showLoadingLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Void> hideLoadingLiveData = new MutableLiveData<>();
     private final WebRepo numberRepository;
     private final DataBaseRepo dataBaseRepo;
-    private LiveData<List<Numbers>> numbers = new MutableLiveData<>();
-    private final MutableLiveData<NumbersResponsePojo> showErrorMessageLiveData = new MutableLiveData<>();
-
-    public LiveData<List<Numbers>> getDataFromDB() {
-        return numbers;
-    }
 
     public MyViewModel(Application application, WebRepo numberRepository) {
         super(application);
@@ -36,16 +34,21 @@ public class MyViewModel extends AndroidViewModel {
         this.numberRepository = numberRepository;
     }
 
-    void insert(Numbers numbers) {
+    private void insert(Numbers numbers) {
         dataBaseRepo.insert(numbers);
     }
 
-    public LiveData<NumbersResponsePojo> getPojoLiveData() {
-        return pojoLiveData;
+    public void setPojoLiveData(NumbersResponsePojo pojoLiveData) {
+        setIsLoading(true);
+        this.pojoLiveData.setValue(pojoLiveData);
     }
 
-    public void setPojoLiveData(NumbersResponsePojo pojoLiveData) {
-        this.pojoLiveData.setValue(pojoLiveData);
+    private void setIsLoading(boolean loading) {
+        if (loading) {
+            showLoadingLiveData.postValue(null);
+        } else {
+            hideLoadingLiveData.postValue(null);
+        }
     }
 
     public void getNumbers(String num) {
@@ -63,14 +66,14 @@ public class MyViewModel extends AndroidViewModel {
                         numbers.time = System.currentTimeMillis();
                         setPojoLiveData(numbersResponsePojo);
                         insert(numbers);
+
+                        setIsLoading(false);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d("numTAg", "onError: " + e.getMessage());
-                        if (e instanceof NoConnectivityException) {
-                            e.getMessage();
-                        }
+                        setIsLoading(false);
+                        errorMessageLiveData.postValue("Internet is missing");
                     }
 
                     @Override
@@ -94,14 +97,14 @@ public class MyViewModel extends AndroidViewModel {
                         numbers.time = System.currentTimeMillis();
                         setPojoLiveData(numbersResponsePojo);
                         insert(numbers);
+
+                        setIsLoading(false);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.d("numTAg", "onError: " + e.getMessage());
-                        if (e instanceof NoConnectivityException) {
-                            e.getMessage();
-                        }
+                        setIsLoading(false);
+                        errorMessageLiveData.postValue("Internet is missing");
                     }
 
                     @Override
@@ -110,7 +113,28 @@ public class MyViewModel extends AndroidViewModel {
                 });
     }
 
-    public MutableLiveData<NumbersResponsePojo> getShowErrorMessageLiveData() {
-        return showErrorMessageLiveData;
+    public LiveData<NumbersResponsePojo> getPojoLiveData() {
+        return pojoLiveData;
+    }
+
+
+    public MutableLiveData<String> getErrorMessageLiveData() {
+        return errorMessageLiveData;
+    }
+
+    public void setErrorMessageLiveData(String errorMessageLiveData) {
+        this.errorMessageLiveData.setValue(errorMessageLiveData);
+    }
+
+    public LiveData<List<Numbers>> getDataFromDB() {
+        return numbers;
+    }
+
+    public MutableLiveData<Void> getShowLoadingLiveData() {
+        return showLoadingLiveData;
+    }
+
+    public MutableLiveData<Void> getHideLoadingLiveData() {
+        return hideLoadingLiveData;
     }
 }

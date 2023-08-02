@@ -9,6 +9,7 @@ public class NoConnectivityException extends IOException {
     @NonNull
     @Override
     public String getMessage() {
+
         return "No Internet Connection";
     }
 }

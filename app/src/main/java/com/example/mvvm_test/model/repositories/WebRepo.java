@@ -1,4 +1,7 @@
-package com.example.mvvm_test.model;
+package com.example.mvvm_test.model.repositories;
+
+import com.example.mvvm_test.model.App;
+import com.example.mvvm_test.model.NumbersResponsePojo;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;

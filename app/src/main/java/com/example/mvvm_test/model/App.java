@@ -1,5 +1,6 @@
 package com.example.mvvm_test.model;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
@@ -31,12 +32,10 @@ public class App extends Application {
     private static AppDataBase mAppDataBase;
 
     private static OkHttpClient.Builder oktHttpClient;
-    HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-
-
-
+    private HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
     private static final String mBASE_URL = "http://numbersapi.com";
 
+    @SuppressLint("SuspiciousIndentation")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -56,7 +55,18 @@ public class App extends Application {
                 .build();
     }
 
+    public static RoomDatabase.Callback sRoomDatabaseCallback = new RoomDatabase.Callback() {
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
 
+            databaseWriteExecutor.execute(() -> {
+                NumbersDao dao = mAppDataBase.numbersDao();
+                Numbers numbers = new Numbers();
+                dao.insert(numbers);
+            });
+        }
+    };
 
     public static WebApi getWebApi() {
         return mRetrofit.create(WebApi.class);
@@ -65,17 +75,4 @@ public class App extends Application {
     public static AppDataBase getDataBase() {
         return mAppDataBase;
     }
-
-    public static RoomDatabase.Callback sRoomDatabaseCallback = new RoomDatabase.Callback() {
-        @Override
-        public void onCreate(@NonNull SupportSQLiteDatabase db) {
-            super.onCreate(db);
-
-            databaseWriteExecutor.execute(() -> {
-                NumbersDao dao = mAppDataBase.numbersDao();
-                Numbers numbers = new Numbers();//!!!!!
-                dao.insert(numbers);
-            });
-        }
-    };
 }
